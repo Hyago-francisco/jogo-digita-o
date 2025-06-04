@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Desafio da Digitação</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #282c36;
+            color: white;
+            margin: 0;
+            padding: 50px;
+        }
+        #game-container {
+            background: #1e1e1e;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+            display: inline-block;
+            width: 300px;
+            display: none;
+        }
+        h1 {
+            color: #ffcc00;
+        }
+        input {
+            margin-top: 10px;
+            padding: 8px;
+            width: 80%;
+            border-radius: 5px;
+            border: none;
+            text-align: center;
+        }
+        .stats {
+            font-size: 18px;
+            margin-top: 10px;
+        }
+        .game-over {
+            display: none;
+            font-size: 22px;
+            color: red;
+            margin-top: 20px;
+        }
+        #play-button, .level-button, .restart-button {
+            padding: 10px 20px;
+            font-size: 18px;
+            background: #ffcc00;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Escolha o nível</h1>
+    <button class="level-button" onclick="startGame('facil')">Fácil</button>
+    <button class="level-button" onclick="startGame('medio')">Médio</button>
+    <button class="level-button" onclick="startGame('dificil')">Difícil</button>
+    
+    <div id="game-container">
+        <h1>Desafio da Digitação</h1>
+        <p>Digite a palavra antes do tempo acabar!</p>
+        <h2 id="word"></h2>
+        <input type="text" id="input-word" placeholder="Digite aqui">
+        <p class="stats">Tempo restante: <span id="timer">0</span>s</p>
+        <p class="stats">Pontos: <span id="score">0</span></p>
+        <p class="stats">Erros: <span id="errors">0</span>/3</p>
+        <p class="game-over" id="game-over">GAME OVER!</p>
+        <button class="restart-button" id="restart-button" style="display:none;" onclick="restartGame()">Tentar Novamente</button>
+        <button class="restart-button" id="menu-button" style="display:none;" onclick="goToMenu()">Voltar ao Menu</button>
+    </div>
+    
+    <script>
+        const words = {
+            facil: ["gato", "casa", "bola", "carro", "pão", "copo", "peixe", "nuvem", "lua", "sol","bolo"],
+            medio: ["montanha", "banana", "caderno", "piscina", "jardim", "tijolo", "cimento", "caminhão", "elefante", "girafa"],
+            dificil: ["orquestra", "biblioteca", "hipopotamo", "paralelepipedo", "ventilador", "computador", "relâmpago", "desenvolvimento", "fisioterapia", "arquitetura"]
+        };
+
+        let time;
+        let score = 0;
+        let errors = 0;
+        let currentWord = "";
+        let timer;
+        let difficulty;
+
+        function startGame(level) {
+            difficulty = level;
+            document.querySelectorAll(".level-button").forEach(btn => btn.style.display = "none");
+            document.getElementById("game-container").style.display = "inline-block";
+            document.getElementById("game-over").style.display = "none";
+            document.getElementById("restart-button").style.display = "none";
+            document.getElementById("menu-button").style.display = "none";
+            
+            if (level === 'facil') time = 120;
+            if (level === 'medio') time = 60;
+            if (level === 'dificil') time = 30;
+            
+            score = 0;
+            errors = 0;
+            document.getElementById("score").textContent = score;
+            document.getElementById("errors").textContent = errors;
+            
+            newWord();
+            startTimer();
+        }
+
+        function newWord() {
+            if (errors >= 3) {
+                document.getElementById("game-over").style.display = "block";
+                document.getElementById("restart-button").style.display = "inline-block";
+                document.getElementById("menu-button").style.display = "inline-block";
+                clearInterval(timer);
+                return;
+            }
+            currentWord = words[difficulty][Math.floor(Math.random() * words[difficulty].length)];
+            document.getElementById("word").textContent = currentWord;
+            document.getElementById("input-word").value = "";
+            document.getElementById("timer").textContent = time;
+        }
+
+        function startTimer() {
+            clearInterval(timer);
+            timer = setInterval(() => {
+                if (time > 0) {
+                    time--;
+                    document.getElementById("timer").textContent = time;
+                } else {
+                    clearInterval(timer);
+                    errors++;
+                    document.getElementById("errors").textContent = errors;
+                    if (errors >= 3) {
+                        document.getElementById("game-over").style.display = "block";
+                        document.getElementById("restart-button").style.display = "inline-block";
+                        document.getElementById("menu-button").style.display = "inline-block";
+                        return;
+                    }
+                    newWord();
+                    startTimer();
+                }
+            }, 1000);
+        }
+
+        function restartGame() {
+            startGame(difficulty);
+        }
+
+        function goToMenu() {
+            location.reload();
+        }
+
+        document.getElementById("input-word").addEventListener("input", function() {
+            if (this.value === currentWord) {
+                score++;
+                document.getElementById("score").textContent = score;
+                newWord();
+                startTimer();
+            }
+        });
+    </script>
+</body>
+</html>
+
